@@ -1,0 +1,12 @@
+{
+  "name": "pspn-slack-listener",
+  "version": "1.0.0",
+  "description": "PSPN Scrum Slack approval listener",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^4.2.1"
+  }
+}
