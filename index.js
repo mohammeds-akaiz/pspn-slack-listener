@@ -110,7 +110,57 @@ expressApp.post('/submit-scrum', async (req, res) => {
 
   try {
 
+    // Check webhook security key
+    const secret = req.headers['x-pspn-secret'];
+
+    if (secret !== process.env.PSPN_WEBHOOK_SECRET) {
+      return res.status(401).json({
+        ok: false,
+        error: 'Unauthorized'
+      });
+    }
+
     const { scrum } = req.body;
+
+    if (!scrum) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Missing scrum'
+      });
+    }
+
+    const result = await app.client.chat.postMessage({
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: APPROVER_USER_ID,
+      text:
+        `*PSPN Scrum — Approval Required*\n\n` +
+        `Please review today's Scrum below.\n\n` +
+        `${scrum}\n\n` +
+        `Reply in this thread with *APPROVE* or *DECLINE*.`
+    });
+
+    pendingApprovals.set(result.ts, {
+      scrum: scrum,
+      createdAt: Date.now()
+    });
+
+    res.json({
+      ok: true,
+      timestamp: result.ts
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+
+  }
+
+});
 
     if (!scrum) {
       return res.status(400).json({
